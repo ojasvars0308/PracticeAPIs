@@ -21,9 +21,9 @@ const practiceSchema = new mongoose.Schema({
         max: 23,
     },
     course: {
-        type: String,
-        required: true,
-        enum: ["JAVA", "Python", "AWS", "GCP", "MERN"]
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+        required: true
     },
     branch: {
         type: String,

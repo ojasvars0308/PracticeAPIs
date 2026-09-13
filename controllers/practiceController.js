@@ -119,15 +119,109 @@ exports.getStudentsAvgAgeByCourse = async (req,res) => {
 
 exports.sortStudentsByAge = async (req,res) => {
     try{
-        const sortedStudents = await PracticeApi.find().sort({ age: 1 })
+        const order = req.query.order || "asc";
 
-        res.status(200).json({
-            success: true,
-            message: "Students sorted by age retrieved successfully",
-            sortedStudents
+        let sortOrder;
+
+        if(order === "asc"){
+            sortOrder = 1
+        }else if(order === "desc"){
+            sortOrder = -1
+        }else{
+            return res.status(400).json({ success: false, message: "Invalid order parameter. Use 'asc' or 'desc'." })
+        }
+
+        const students = await PracticeApi.find().sort({ age: sortOrder })
+        
+        res.status(200).json({ 
+            success: true, 
+            message: "Students sorted by age successfully", 
+            students 
         })
     }catch(error){
         console.log("Error in sorting students by age: ", error.message)
+        res.status(500).json({ success: false, message: "Server issue" })
+    }
+}
+
+exports.getStudentById = async (req,res) => {
+    try{
+        const { id } = req.params;
+
+        const student = await PracticeApi.findById(id)
+
+        if(!student){
+            return res.status(404).json({ success: false, message: "Student not found" })
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Student retrieved successfully", 
+            student 
+        })
+    }catch(error){
+        console.log("Error in retrieving student by ID: ", error.message)
+        res.status(500).json({ success: false, message: "Server issue" })
+    }
+}   
+
+exports.createStudent = async (req,res) => {
+    try{
+        const { name, age, course, email, branch } = req.body;
+
+        if(!name || !age || !course || !email || !branch){
+            return res.status(400).json({ 
+                success: false, 
+                message: "All fields (name, age, course, email) are required" 
+            })
+        }
+
+        const newStudent = await PracticeApi.create({ name, age, course, email, branch });
+        res.status(201).json({ 
+            success: true, 
+            message: "Student created successfully", 
+            student: newStudent 
+        })
+    }catch(error){
+        console.log("Error in creating student: ", error.message)
+        res.status(500).json({ success: false, message: "Server issue" })
+    }   
+}
+
+exports.createIndexOnEmail = async (req,res) => {
+    try{
+        const index = await PracticeApi.collection.createIndex({ email: 1 }, { unique: true })
+
+        res.status(201).json({ 
+            success: true, 
+            message: "Index created successfully", 
+            index 
+        })
+    }catch(error){
+        console.log("Error in creating index on email: ", error.message)
+        res.status(500).json({ success: false, message: "Server issue" })
+    }
+}
+
+exports.explainEmailQuery = async (req,res) => {
+    try{
+        const { email } = req.query;
+        if(!email){
+            return res.status(400).json({ 
+                success: false, 
+                message: "Email query parameter is required" 
+            })
+        }
+
+        const explainResult = await PracticeApi.collection.find({ email: email }).explain("executionStats");
+        
+        res.status(200).json({
+            success: true,
+            message: "Query explanation retrieved successfully",
+            explainResult
+        })
+    }catch(error){
+        console.log("Error in explaining email query: ", error.message)
         res.status(500).json({ success: false, message: "Server issue" })
     }
 }
