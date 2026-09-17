@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const { generateAccessToken, generateRefreshToken} = require("../utils/tokenUtils")
 
 const register = async (req, res) => {
   try {
@@ -76,16 +77,14 @@ const login = async(req,res) => {
       });
     }
 
-    const accessToken = jwt.sign(
-      { userId: user._id.toString(), role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const accessToken = generateAccessToken(user)
+    const refreshToken = generateRefreshToken(user)
 
     res.status(200).json({
       success: true,
       message: "Login successful",
       accessToken,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
@@ -103,5 +102,49 @@ const login = async(req,res) => {
   }
 }
 
-module.exports = { register, login };
+const refreshAccessToken = async(req,res) => {
+  try{
+    const {refreshToken} = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Refresh token is required" 
+      });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const user = await User.findById(decoded.userId);
+
+    if(!user){
+      return res.status(401).json({ 
+        success: false, 
+        message: "User no longer exists" 
+      });
+    }
+
+    const newAccessToken = generateAccessToken(user);
+
+    res.status(200).json({ 
+      success: true, 
+      accessToken: newAccessToken 
+    });
+
+  }catch(err){
+    console.error(err);
+
+    res.status(401).json({ 
+      success: false, 
+      message: "Invalid or expired refresh token" 
+    });
+
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
+  }
+}
+
+module.exports = { register, login, refreshAccessToken };
 

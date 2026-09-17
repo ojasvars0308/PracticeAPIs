@@ -7,9 +7,11 @@ const {getStudentsOlder21,
     explainEmailQuery,createStudent, getStudentById
     } = require("../controllers/practiceController")
 
+const authenticate = require("../middlewares/authMiddleware")
+
 const router = express.Router();
 
-router.get("/getStudentsOT21", getStudentsOlder21)
+router.get("/getStudentsOT21",authenticate, getStudentsOlder21)
 router.get("/getMJStudents", getMJStudents)
 router.get("/getStudentsStartsWithA", getStudentsStartsWithA)
 router.get("/countStudentsByCourse", countStudentsByCourse)
