@@ -5,12 +5,12 @@ const { generateAccessToken, generateRefreshToken} = require("../utils/tokenUtil
 
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !role) {
       return res.status(400).json({
         success: false,
-        message: "Name, email and password are required"
+        message: "Name, email, role and password are required"
       });
     }
 
@@ -23,7 +23,7 @@ const register = async (req, res) => {
       });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role });
 
     res.status(201).json({
       success: true,
@@ -146,5 +146,27 @@ const refreshAccessToken = async(req,res) => {
   }
 }
 
-module.exports = { register, login, refreshAccessToken };
+const logout = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    // In a production implementation,
+    // find the refresh session and revoke it.
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Logged out successfully" 
+    });
+
+  } catch (error) {
+    console.error(error)
+    
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal server error" 
+    });
+  }
+};
+
+module.exports = { register, login, refreshAccessToken, logout };
 

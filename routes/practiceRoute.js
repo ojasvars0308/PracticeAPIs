@@ -1,4 +1,7 @@
 const express = require("express")
+
+const router = express.Router();
+
 const {getStudentsOlder21, 
     getMJStudents, 
     getStudentsStartsWithA, 
@@ -7,11 +10,10 @@ const {getStudentsOlder21,
     explainEmailQuery,createStudent, getStudentById
     } = require("../controllers/practiceController")
 
-const authenticate = require("../middlewares/authMiddleware")
+const authenticate = require("../middlewares/authMiddleware");
+const authorize = require("../middlewares/roleMiddleware");
 
-const router = express.Router();
-
-router.get("/getStudentsOT21",authenticate, getStudentsOlder21)
+router.get("/getStudentsOT21",authenticate, authorize("admin"), getStudentsOlder21)
 router.get("/getMJStudents", getMJStudents)
 router.get("/getStudentsStartsWithA", getStudentsStartsWithA)
 router.get("/countStudentsByCourse", countStudentsByCourse)
