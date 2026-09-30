@@ -1,13 +1,13 @@
-function StudentCard() {
+function StudentCard( { name, age, email, course } ) {
   // ============================================
   // STATIC STUDENT DATA
   // ============================================
 
   const student = {
-    name: "Ojas Varshney",
-    age: 25,
-    email: "ojas.varshney@example.com",
-    course: "MERN Stack Development",
+    name: name,
+    age: age,
+    email: email,
+    course: course,
 
     address: {
       city: "Greater Noida",
